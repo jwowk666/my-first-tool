@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>سكربتات الدراك</title>
+    <style>
+        body { background: #000; margin: 0; overflow: hidden; color: white; font-family: sans-serif; }
+        canvas { position: fixed; top:0; left:0; z-index: -1; }
+        .card { background: rgba(10, 10, 20, 0.8); border: 2px solid #7c5cff; border-radius: 20px; padding: 30px; width: 350px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        button { background: linear-gradient(90deg, #7c5cff, #5bdbff); border: none; padding: 12px; color: white; border-radius: 10px; cursor: pointer; width: 100%; margin: 5px 0; font-weight: bold; }
+        #results { margin-top: 15px; border-top: 1px solid #444; padding-top: 10px; max-height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <canvas id="stars"></canvas>
+
+    <div id="mainMenu" class="card">
+        <h1>سكربتات الدراك</h1>
+        <button onclick="showSection('search')">بحث عن سكربتات</button>
+    </div>
+
+    <div id="searchSection" class="card" style="display:none;">
+        <span onclick="showSection('main')" style="float:left; cursor:pointer; color:red;">X</span>
+        <h2>قائمة السكربتات</h2>
+        <input id="searchBox" placeholder="بحث باسم السكربت..." onkeyup="renderScripts()" style="width:90%; padding:5px;">
+        <div id="results"></div>
+        <button style="font-size:20px;" onclick="showAddModal()">+</button>
+    </div>
+
+    <script>
+        // تأثير النجوم
+        const canvas = document.getElementById('stars');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        let stars = Array.from({length: 150}, () => ({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*1.5}));
+        function draw() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = "white";
+            stars.forEach(s => { ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill(); s.y += 0.1; if(s.y > canvas.height) s.y = 0; });
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        // منطق السكربتات
+        let scriptDatabase = JSON.parse(localStorage.getItem('myScripts') || '[]');
+        function showSection(type) {
+            document.getElementById('mainMenu').style.display = type === 'main' ? 'block' : 'none';
+            document.getElementById('searchSection').style.display = type === 'search' ? 'block' : 'none';
+        }
+        function showAddModal() {
+            let name = prompt("اسم السكربت:");
+            let map = prompt("اسم الماب:");
+            if (!name || !map) return;
+            scriptDatabase.push({ name, map });
+            localStorage.setItem('myScripts', JSON.stringify(scriptDatabase));
+            renderScripts();
+        }
+        function renderScripts() {
+            let container = document.getElementById('results');
+            container.innerHTML = "";
+            scriptDatabase.forEach(s => {
+                container.innerHTML += `<div style="border-bottom:1px solid #333; padding:5px;"><b>${s.name}</b> (${s.map})</div>`;
+            });
+        }
+    </script>
+</body>
+</html>
+
